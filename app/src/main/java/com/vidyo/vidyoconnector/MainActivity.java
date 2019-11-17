@@ -1,10 +1,14 @@
 package com.vidyo.vidyoconnector;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,12 +21,22 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.vidyo.VidyoClient.Connector.Connector;
 import com.vidyo.VidyoClient.Connector.ConnectorPkg;
 import com.vidyo.VidyoClient.Endpoint.LogRecord;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 //https://stackoverflow.com/questions/43056466/track-vidyo-conference-participants-with-android-vidyo-sdk
 public class MainActivity extends AppCompatActivity implements Connector.IConnect, Connector.IRegisterLogEventListener {
+
+    private static final String TAG = "MainActivity";
 
     enum VIDYO_CONNECTOR_STATE {
         VC_CONNECTED,
@@ -57,12 +71,34 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
      *  Operating System Events
      */
 
+
+    //Runtime Permissions
+    private String[] PERMISSIONS = { android.Manifest.permission.CAMERA, android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE };
+    private PermissionUtility mPermissions;
+    private MyNetworkReceiver mNetworkReceiver;
+    private String mVidyoToken;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mNetworkReceiver = new MyNetworkReceiver(this);
+        mPermissions = new PermissionUtility(this, PERMISSIONS); //Runtime permissions
 
+
+        getVidyoToken();
+
+        //Runtime Permissions
+        if(mPermissions.arePermissionsEnabled()){
+            //vidyoStart();
+            Log.d(TAG, "Permission granted 1");
+        } else {
+            mPermissions.requestMultiplePermissions();
+        }
+
+
+        //=============================================================| Vidyo Io
         // Initialize the member variables
         mToggleConnectButton = (ToggleButton) findViewById(R.id.toggleConnectButton);
         mControlsLayout = (LinearLayout) findViewById(R.id.controlsLayout);
@@ -81,14 +117,46 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         // Initialize the VidyoClient
-        //Connector.SetApplicationUIContext(this);
-        //mVidyoClientInitialized = Connector.Initialize();
-
-        /* Initialize VidyoConnector */
         ConnectorPkg.setApplicationUIContext(this);
         mVidyoClientInitialized = ConnectorPkg.initialize();
     }
 
+    //=============================================================| Vidyo.io server token
+    public void getVidyoToken() {
+        String url = "https://us-central1-vidyoio.cloudfunctions.net/getVidyoToken";
+        StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    mVidyoToken = jsonObject.getString("token");
+                    Log.d(TAG, mVidyoToken);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.e(TAG, e.getMessage());
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.getMessage());
+            }
+        });
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
+    }
+
+    //=============================================================| Runtime permissions
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(mPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            //vidyoStart();
+            Log.d(TAG, "Permission granted 2");
+        }
+    }
+
+    //=============================================================| onStart(), onPause(), onResume(), onStop()
     @Override
     protected void onNewIntent(Intent intent) {
         mLogger.Log("onNewIntent");
@@ -98,7 +166,6 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         setIntent(intent);
     }
 
-    //=============================================================| onStart(), onPause(), onResume(), onStop()
     @Override
     protected void onStart() {
         mLogger.Log("onStart");
@@ -107,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         // If the app was launched by a different app, then get any parameters; otherwise use default settings
         Intent intent = getIntent();
         mHost.setText(intent.hasExtra("host") ? intent.getStringExtra("host") : "prod.vidyo.io");
-        mToken.setText(intent.hasExtra("token") ? intent.getStringExtra("token") : "");
+        mToken.setText(intent.hasExtra("token") ? intent.getStringExtra("token") : mVidyoToken);
         mDisplayName.setText(intent.hasExtra("displayName") ? intent.getStringExtra("displayName") : "kamal");
         mResourceId.setText(intent.hasExtra("resourceId") ? intent.getStringExtra("resourceId") : "kamal123456");
         mReturnURL = intent.hasExtra("returnURL") ? intent.getStringExtra("returnURL") : null;
@@ -130,6 +197,8 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
     protected void onResume() {
         mLogger.Log("onResume");
         super.onResume();
+
+        registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         ViewTreeObserver viewTreeObserver = mVideoFrame.getViewTreeObserver();
         if (viewTreeObserver.isAlive()) {
@@ -184,6 +253,12 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
     protected void onPause() {
         mLogger.Log("onPause");
         super.onPause();
+
+        try {
+            unregisterReceiver(mNetworkReceiver);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
