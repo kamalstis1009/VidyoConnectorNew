@@ -83,13 +83,11 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //--------------------------------------------| Network, permissions
         mNetworkReceiver = new MyNetworkReceiver(this);
         mPermissions = new PermissionUtility(this, PERMISSIONS); //Runtime permissions
 
-
-        getVidyoToken();
-
-        //Runtime Permissions
+        //--------------------------------------------| Runtime Permissions
         if(mPermissions.arePermissionsEnabled()){
             //vidyoStart();
             Log.d(TAG, "Permission granted 1");
@@ -98,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         }
 
 
-        //=============================================================| Vidyo Io
+        //--------------------------------------------| Vidyo Io
         // Initialize the member variables
         mToggleConnectButton = (ToggleButton) findViewById(R.id.toggleConnectButton);
         mControlsLayout = (LinearLayout) findViewById(R.id.controlsLayout);
@@ -119,6 +117,9 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         // Initialize the VidyoClient
         ConnectorPkg.setApplicationUIContext(this);
         mVidyoClientInitialized = ConnectorPkg.initialize();
+
+        //--------------------------------------------| Vidyo.io server token
+        getVidyoToken();
     }
 
     //=============================================================| Vidyo.io server token
@@ -130,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     mVidyoToken = jsonObject.getString("token");
+                    mToken.setText(mVidyoToken);
                     Log.d(TAG, mVidyoToken);
                 } catch (JSONException e) {
                     e.printStackTrace();
