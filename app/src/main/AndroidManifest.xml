@@ -3,7 +3,9 @@
     package="com.vidyo.vidyoconnector">
 
     <uses-permission android:name="android.permission.CAMERA" />
+
     <uses-feature android:name="android.hardware.camera" />
+
     <uses-permission android:name="android.permission.CAPTURE_AUDIO_OUTPUT" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
@@ -20,9 +22,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:launchMode="singleTop"
             android:configChanges="orientation|screenSize"
-            android:name=".MainActivity">
+            android:launchMode="singleTop"
+            android:name=".VideoCallActivity" />
+        <activity
+            android:name=".MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
