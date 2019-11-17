@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        setContentView(R.layout.activity_main);
 
         // Initialize the member variables
         mToggleConnectButton = (ToggleButton) findViewById(R.id.toggleConnectButton);
