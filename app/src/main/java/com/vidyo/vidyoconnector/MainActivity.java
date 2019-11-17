@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         setIntent(intent);
     }
 
+    //=============================================================| onStart(), onPause(), onResume(), onStop()
     @Override
     protected void onStart() {
         mLogger.Log("onStart");
@@ -207,6 +208,7 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         super.onDestroy();
     }
 
+    //=============================================================| orientation onConfigurationChanged
     // The device interface orientation has changed
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -230,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         }
     }
 
+    //=============================================================| Menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -251,6 +254,8 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         return super.onOptionsItemSelected(item);
     }
 
+
+    //=============================================================| RefreshUI
     /*
      * Private Utility Functions
      */
@@ -262,6 +267,7 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         mLogger.Log("VidyoConnectorShowViewAt: x = 0, y = 0, w = " + mVideoFrame.getWidth() + ", h = " + mVideoFrame.getHeight());
     }
 
+    //=============================================================| ConnectorStateUpdated
     // The state of the VidyoConnector connection changed, reconfigure the UI.
     // If connected, dismiss the controls layout
     private void ConnectorStateUpdated(VIDYO_CONNECTOR_STATE state, final String statusText) {
@@ -322,6 +328,7 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         });
     }
 
+    //=============================================================| Button Event
     /*
      * Button Event Callbacks
      */
@@ -390,6 +397,7 @@ public class MainActivity extends AppCompatActivity implements Connector.IConnec
         }
     }
 
+    //=============================================================| Connection State
     /*
      *  Connector Events
      */
