@@ -14,7 +14,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/videoFrame" />
+            android:id="@+id/video_frame" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -24,7 +24,7 @@
             android:visibility="gone"/>
 
         <ProgressBar
-            android:id="@+id/connectionSpinner"
+            android:id="@+id/connecting_progress_bar"
             android:layout_centerInParent="true"
             android:layout_width="wrap_content"
             android:layout_height="25dp"
@@ -41,10 +41,10 @@
                 android:layout_height="60dp"
                 android:layout_width="match_parent"
                 android:gravity="center"
-                android:id="@+id/toolbarLayout">
+                android:id="@+id/action_button_layout">
 
                 <ToggleButton
-                    android:id="@+id/toggleConnectButton"
+                    android:id="@+id/connect_action_toggle"
                     android:onClick="ToggleConnectButtonPressed"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
@@ -57,7 +57,7 @@
                     android:focusableInTouchMode="false"/>
 
                 <ToggleButton
-                    android:id="@+id/cameraSwitch"
+                    android:id="@+id/switch_camera_action_toggle"
                     android:onClick="CameraSwapButtonPressed"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
@@ -70,7 +70,7 @@
                     android:focusableInTouchMode="false"/>
 
                 <ToggleButton
-                    android:id="@+id/cameraPrivacyButton"
+                    android:id="@+id/local_video_action_toggle"
                     android:onClick="CameraPrivacyButtonPressed"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
@@ -83,7 +83,7 @@
                     android:focusableInTouchMode="false"/>
 
                 <ToggleButton
-                    android:id="@+id/microphonePrivacyButton"
+                    android:id="@+id/mute_action_toggle"
                     android:onClick="MicrophonePrivacyButtonPressed"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
@@ -98,7 +98,7 @@
 
             <!-- Connection Status -->
             <TextView
-                android:id="@+id/toolbarStatusText"
+                android:id="@+id/connection_status"
                 android:layout_height="20dp"
                 android:layout_width="match_parent"
                 android:maxLines="1"

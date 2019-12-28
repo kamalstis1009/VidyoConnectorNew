@@ -10,19 +10,15 @@ import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.vidyo.VidyoClient.Connector.Connector;
 import com.vidyo.VidyoClient.Connector.ConnectorPkg;
 import com.vidyo.VidyoClient.Endpoint.LogRecord;
@@ -35,7 +31,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class VideoCallActivity extends AppCompatActivity implements MyNetworkReceiver.NetworkListener, Connector.IConnect, Connector.IRegisterLogEventListener, Connector.IRegisterParticipantEventListener {
 
-    private static final String TAG = "VideoCallActivity";
+    private String TAG = this.getClass().getSimpleName();
 
     private static final int RC_SETTINGS_SCREEN_PERM = 123;
     private static final int RC_VIDEO_APP_PERM = 124;
@@ -52,10 +48,10 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
     private boolean mVidyoClientInitialized = false;
     private Logger mLogger = Logger.getInstance();
     private Connector mVidyoConnector = null;
-    private ToggleButton mToggleConnectButton;
-    private ProgressBar mConnectionSpinner;
-    private LinearLayout mToolbarLayout;
-    private TextView mToolbarStatus;
+    private ToggleButton mConnectButton;
+    private ProgressBar mProgress;
+    private LinearLayout mActionButtonLayout;
+    private TextView mConnectionStatus;
     private FrameLayout mVideoFrame;
     private FrameLayout mToggleToolbarFrame;
 
@@ -96,8 +92,8 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
             }
         }
         if (isConnected && isEnabled) {
-            mToggleConnectButton.setEnabled(true);
-            mToggleConnectButton.performClick();
+            mConnectButton.setEnabled(true);
+            mConnectButton.performClick();
             Log.d(TAG, "onNetworkLatency 2: " + latency + " - " + isConnected + " - " + isEnabled);
         }
     }
@@ -114,12 +110,12 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
         if (EasyPermissions.hasPermissions(this, perms)) {
 
             // initialize view objects from your layout
-            mToggleConnectButton = (ToggleButton) findViewById(R.id.toggleConnectButton);
-            mToolbarLayout = (LinearLayout) findViewById(R.id.toolbarLayout);
-            mVideoFrame = (FrameLayout) findViewById(R.id.videoFrame);
+            mConnectButton = (ToggleButton) findViewById(R.id.connect_action_toggle);
+            mActionButtonLayout = (LinearLayout) findViewById(R.id.action_button_layout);
+            mVideoFrame = (FrameLayout) findViewById(R.id.video_frame);
             mToggleToolbarFrame = (FrameLayout) findViewById(R.id.toggleToolbarFrame);
-            mToolbarStatus = (TextView) findViewById(R.id.toolbarStatusText);
-            mConnectionSpinner = (ProgressBar) findViewById(R.id.connectionSpinner);
+            mConnectionStatus = (TextView) findViewById(R.id.connection_status);
+            mProgress = (ProgressBar) findViewById(R.id.connecting_progress_bar);
 
             // Suppress keyboard
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -188,7 +184,7 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
 
     private void onVidyoStart() {
         // Enable toggle connect button
-        mToggleConnectButton.setEnabled(true);
+        mConnectButton.setEnabled(true);
 
     }
 
@@ -235,7 +231,7 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
 
                     // If configured to auto-join, then simulate a click of the toggle connect button
                     if (mVidyoConnectorConstructed && mAutoJoin) {
-                        mToggleConnectButton.performClick();
+                        mConnectButton.performClick();
                     }
                 }
             });
@@ -293,10 +289,10 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
             public void run() {
 
                 // Update the toggle connect button to either start call or end call image
-                mToggleConnectButton.setChecked(mVidyoConnectorState == VIDYO_CONNECTOR_STATE.VC_CONNECTED);
+                mConnectButton.setChecked(mVidyoConnectorState == VIDYO_CONNECTOR_STATE.VC_CONNECTED);
 
                 // Set the status text in the toolbar
-                mToolbarStatus.setText(statusText);
+                mConnectionStatus.setText(statusText);
 
                 if (mVidyoConnectorState == VIDYO_CONNECTOR_STATE.VC_CONNECTED) {
                     // Enable the toggle toolbar control
@@ -319,13 +315,13 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
                     // If the allow-reconnect flag is set to false and a normal (non-failure) disconnect occurred,
                     // then disable the toggle connect button, in order to prevent reconnection.
                     if (!mAllowReconnect && (mVidyoConnectorState == VIDYO_CONNECTOR_STATE.VC_DISCONNECTED)) {
-                        mToggleConnectButton.setEnabled(false);
-                        mToolbarStatus.setText("Call ended");
+                        mConnectButton.setEnabled(false);
+                        mConnectionStatus.setText("Call ended");
                     }
                 }
 
                 // Hide the spinner animation
-                mConnectionSpinner.setVisibility(View.INVISIBLE);
+                mProgress.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -339,11 +335,11 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
     // If not in a call, attempt to connect to the backend service.
     // If in a call, disconnect.
     public void ToggleConnectButtonPressed(View v) {
-        if (mToggleConnectButton.isChecked()) {
-            mToolbarStatus.setText("Connecting...");
+        if (mConnectButton.isChecked()) {
+            mConnectionStatus.setText("Connecting...");
 
             // Display the spinner animation
-            mConnectionSpinner.setVisibility(View.VISIBLE);
+            mProgress.setVisibility(View.VISIBLE);
 
             final boolean status = mVidyoConnector.connect(
                     mHost,
@@ -353,7 +349,7 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
                     this);
             if (!status) {
                 // Hide the spinner animation
-                mConnectionSpinner.setVisibility(View.INVISIBLE);
+                mProgress.setVisibility(View.INVISIBLE);
 
                 ConnectorStateUpdated(VIDYO_CONNECTOR_STATE.VC_CONNECTION_FAILURE, "Connection failed");
             }
@@ -367,9 +363,9 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
             // Change the button back to the callEnd image because do not want to assume that the Disconnect
             // call will actually end the call. Need to wait for the callback to be received
             // before swapping to the callStart image.
-            mToggleConnectButton.setChecked(true);
+            mConnectButton.setChecked(true);
 
-            mToolbarStatus.setText("Disconnecting...");
+            mConnectionStatus.setText("Disconnecting...");
 
             mVidyoConnector.unregisterParticipantEventListener();
 
@@ -395,10 +391,10 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
     // Toggle visibility of the toolbar
     public void ToggleToolbarVisibility(View v) {
         if (mVidyoConnectorState == VIDYO_CONNECTOR_STATE.VC_CONNECTED) {
-            if (mToolbarLayout.getVisibility() == View.VISIBLE) {
-                mToolbarLayout.setVisibility(View.INVISIBLE);
+            if (mActionButtonLayout.getVisibility() == View.VISIBLE) {
+                mActionButtonLayout.setVisibility(View.INVISIBLE);
             } else {
-                mToolbarLayout.setVisibility(View.VISIBLE);
+                mActionButtonLayout.setVisibility(View.VISIBLE);
             }
         }
     }
