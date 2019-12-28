@@ -41,12 +41,12 @@ public class MainActivity extends AppCompatActivity {
         getVidyoToken();
 
         //--------------------------------------------| Runtime Permissions
-        if(mPermissions.arePermissionsEnabled()){
+        /*if(mPermissions.arePermissionsEnabled()){
             isGranted = true;
             Log.d(TAG, "Permission granted 1");
         } else {
             mPermissions.requestMultiplePermissions();
-        }
+        }*/
 
     }
 
@@ -60,9 +60,10 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(response);
                     mVidyoToken = jsonObject.getString("token");
                     Log.d(TAG, mVidyoToken);
-                    if (isGranted) {
+                    /*if (isGranted) {
                         goVideoActivity();
-                    }
+                    }*/
+                    goVideoActivity();
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Log.e(TAG, e.getMessage());

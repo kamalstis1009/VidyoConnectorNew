@@ -3,6 +3,7 @@ package com.vidyo.vidyoconnector;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
@@ -21,6 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.vidyo.VidyoClient.Connector.Connector;
 import com.vidyo.VidyoClient.Connector.ConnectorPkg;
 import com.vidyo.VidyoClient.Endpoint.LogRecord;
@@ -28,9 +30,15 @@ import com.vidyo.VidyoClient.Endpoint.Participant;
 
 import java.util.ArrayList;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
 public class VideoCallActivity extends AppCompatActivity implements MyNetworkReceiver.NetworkListener, Connector.IConnect, Connector.IRegisterLogEventListener, Connector.IRegisterParticipantEventListener {
 
     private static final String TAG = "VideoCallActivity";
+
+    private static final int RC_SETTINGS_SCREEN_PERM = 123;
+    private static final int RC_VIDEO_APP_PERM = 124;
 
     enum VIDYO_CONNECTOR_STATE {
         VC_CONNECTED,
@@ -52,7 +60,6 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
     private FrameLayout mToggleToolbarFrame;
 
     private String mHost = "prod.vidyo.io", mDisplayName = "Zamal", mResourceId = "kamal123456";
-    private boolean mHideConfig = false;
     private boolean mAutoJoin = false;
     private boolean mAllowReconnect = true;
     private String mReturnURL = null;
@@ -77,23 +84,7 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
             mVidyoToken = getIntent().getStringExtra("token");
         }
 
-        //--------------------------------------------| Vidyo Io
-        // Initialize the member variables
-        mToggleConnectButton = (ToggleButton) findViewById(R.id.toggleConnectButton);
-        mToolbarLayout = (LinearLayout) findViewById(R.id.toolbarLayout);
-        mVideoFrame = (FrameLayout) findViewById(R.id.videoFrame);
-        mToggleToolbarFrame = (FrameLayout) findViewById(R.id.toggleToolbarFrame);
-        mToolbarStatus = (TextView) findViewById(R.id.toolbarStatusText);
-        mConnectionSpinner = (ProgressBar) findViewById(R.id.connectionSpinner);
-
-        // Suppress keyboard
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
-        // Initialize the VidyoClient
-        ConnectorPkg.setApplicationUIContext(this);
-        mVidyoClientInitialized = ConnectorPkg.initialize();
-
-        onVidyoStart();
+        requestPermissions();
     }
 
     @Override
@@ -111,21 +102,55 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @AfterPermissionGranted(RC_VIDEO_APP_PERM)
+    private void requestPermissions() {
+        String[] perms = { Manifest.permission.INTERNET, Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE };
+        if (EasyPermissions.hasPermissions(this, perms)) {
+
+            // initialize view objects from your layout
+            mToggleConnectButton = (ToggleButton) findViewById(R.id.toggleConnectButton);
+            mToolbarLayout = (LinearLayout) findViewById(R.id.toolbarLayout);
+            mVideoFrame = (FrameLayout) findViewById(R.id.videoFrame);
+            mToggleToolbarFrame = (FrameLayout) findViewById(R.id.toggleToolbarFrame);
+            mToolbarStatus = (TextView) findViewById(R.id.toolbarStatusText);
+            mConnectionSpinner = (ProgressBar) findViewById(R.id.connectionSpinner);
+
+            // Suppress keyboard
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
+            // Initialize the VidyoClient
+            ConnectorPkg.setApplicationUIContext(this);
+            mVidyoClientInitialized = ConnectorPkg.initialize();
+
+            // initialize and connect to the session
+            onVidyoStart();
+
+            startConnect();
+
+        } else {
+            EasyPermissions.requestPermissions(this, "This app needs access to your camera and mic to make video calls", RC_VIDEO_APP_PERM, perms);
+        }
+    }
+
     //=============================================================| onStart(), onPause(), onResume(), onStop()
     @Override
     protected void onResume() {
-        Log.d(TAG, "onResume");
         super.onResume();
 
         // NetworkReceiver
         registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
-        startConnect();
+        //startConnect();
     }
 
     @Override
     protected void onPause() {
-        Log.d(TAG, "onPause");
         super.onPause();
 
         // NetworkReceiver
@@ -138,24 +163,27 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
 
     @Override
     protected void onRestart() {
-        Log.d(TAG, "onRestart");
         super.onRestart();
-        mVidyoConnector.setMode((Connector.ConnectorMode.VIDYO_CONNECTORMODE_Foreground));
+        if (mVidyoConnector != null) {
+            mVidyoConnector.setMode((Connector.ConnectorMode.VIDYO_CONNECTORMODE_Foreground));
+        }
     }
 
     @Override
     protected void onStop() {
-        Log.d(TAG, "onStop");
-        mVidyoConnector.setMode(Connector.ConnectorMode.VIDYO_CONNECTORMODE_Background);
         super.onStop();
+        if (mVidyoConnector != null) {
+            mVidyoConnector.setMode(Connector.ConnectorMode.VIDYO_CONNECTORMODE_Background);
+        }
     }
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "onDestroy");
-        //Connector.Uninitialize();
-        mVidyoConnector.disconnect();
         super.onDestroy();
+        if (mVidyoConnector != null) {
+            //Connector.Uninitialize();
+            mVidyoConnector.disconnect();
+        }
     }
 
     private void onVidyoStart() {
