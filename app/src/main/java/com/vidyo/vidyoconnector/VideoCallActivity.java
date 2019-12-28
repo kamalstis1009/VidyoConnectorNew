@@ -110,10 +110,10 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
         if (EasyPermissions.hasPermissions(this, perms)) {
 
             // initialize view objects from your layout
+            mVideoFrame = (FrameLayout) findViewById(R.id.video_frame);
             mConnectButton = (ToggleButton) findViewById(R.id.connect_action_toggle);
             mActionButtonLayout = (LinearLayout) findViewById(R.id.action_button_layout);
-            mVideoFrame = (FrameLayout) findViewById(R.id.video_frame);
-            mToggleToolbarFrame = (FrameLayout) findViewById(R.id.toggleToolbarFrame);
+            mToggleToolbarFrame = (FrameLayout) findViewById(R.id.action_button_frame);
             mConnectionStatus = (TextView) findViewById(R.id.connection_status);
             mProgress = (ProgressBar) findViewById(R.id.connecting_progress_bar);
 
@@ -334,7 +334,7 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
     // The Connect button was pressed.
     // If not in a call, attempt to connect to the backend service.
     // If in a call, disconnect.
-    public void ToggleConnectButtonPressed(View v) {
+    public void onClickConnect(View v) {
         if (mConnectButton.isChecked()) {
             mConnectionStatus.setText("Connecting...");
 
@@ -373,23 +373,23 @@ public class VideoCallActivity extends AppCompatActivity implements MyNetworkRec
         }
     }
 
-    // Toggle the microphone privacy
-    public void MicrophonePrivacyButtonPressed(View v) {
-        mVidyoConnector.setMicrophonePrivacy(((ToggleButton) v).isChecked());
-    }
-
-    // Toggle the camera privacy
-    public void CameraPrivacyButtonPressed(View v) {
-        mVidyoConnector.setCameraPrivacy(((ToggleButton) v).isChecked());
-    }
-
     // Handle the camera swap button being pressed. Cycle the camera.
-    public void CameraSwapButtonPressed(View v) {
+    public void onClickCameraSwap(View v) {
         mVidyoConnector.cycleCamera();
     }
 
+    // Toggle the camera privacy
+    public void onClickLocalVideo(View v) {
+        mVidyoConnector.setCameraPrivacy(((ToggleButton) v).isChecked());
+    }
+
+    // Toggle the microphone privacy
+    public void onClickMute(View v) {
+        mVidyoConnector.setMicrophonePrivacy(((ToggleButton) v).isChecked());
+    }
+
     // Toggle visibility of the toolbar
-    public void ToggleToolbarVisibility(View v) {
+    public void onClickActionButtonVisibility(View v) {
         if (mVidyoConnectorState == VIDYO_CONNECTOR_STATE.VC_CONNECTED) {
             if (mActionButtonLayout.getVisibility() == View.VISIBLE) {
                 mActionButtonLayout.setVisibility(View.INVISIBLE);

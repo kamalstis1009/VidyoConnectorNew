@@ -19,8 +19,8 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/toggleToolbarFrame"
-            android:onClick="ToggleToolbarVisibility"
+            android:id="@+id/action_button_frame"
+            android:onClick="onClickActionButtonVisibility"
             android:visibility="gone"/>
 
         <ProgressBar
@@ -45,7 +45,7 @@
 
                 <ToggleButton
                     android:id="@+id/connect_action_toggle"
-                    android:onClick="ToggleConnectButtonPressed"
+                    android:onClick="onClickConnect"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:background="@drawable/toggle_connect_selector"
@@ -58,7 +58,7 @@
 
                 <ToggleButton
                     android:id="@+id/switch_camera_action_toggle"
-                    android:onClick="CameraSwapButtonPressed"
+                    android:onClick="onClickCameraSwap"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:background="@drawable/toggle_camera_selector"
@@ -71,7 +71,7 @@
 
                 <ToggleButton
                     android:id="@+id/local_video_action_toggle"
-                    android:onClick="CameraPrivacyButtonPressed"
+                    android:onClick="onClickLocalVideo"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:background="@drawable/toggle_video_selector"
@@ -84,7 +84,7 @@
 
                 <ToggleButton
                     android:id="@+id/mute_action_toggle"
-                    android:onClick="MicrophonePrivacyButtonPressed"
+                    android:onClick="onClickMute"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:background="@drawable/toggle_audio_selector"
@@ -94,6 +94,7 @@
                     android:textOff=""
                     android:focusable="false"
                     android:focusableInTouchMode="false"/>
+
             </LinearLayout>
 
             <!-- Connection Status -->
