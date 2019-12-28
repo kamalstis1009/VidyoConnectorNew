@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //--------------------------------------------| Network, permissions
-        mNetworkReceiver = new MyNetworkReceiver(this);
         mPermissions = new PermissionUtility(this, PERMISSIONS); //Runtime permissions
 
         //--------------------------------------------| Vidyo.io server token
@@ -51,29 +50,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-
-        // NetworkReceiver
-        registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        // NetworkReceiver
-        try {
-            unregisterReceiver(mNetworkReceiver);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     //=============================================================| Vidyo.io server token
     public void getVidyoToken() {
-        String url = "https://us-central1-vidyoio.cloudfunctions.net/getVidyoToken";
+        String url = "https://us-central1-mobidoc-e1c92.cloudfunctions.net/getVidyoTokenByKamal";
         StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
