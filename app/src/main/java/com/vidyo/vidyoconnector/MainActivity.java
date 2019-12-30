@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import com.android.volley.RequestQueue;
@@ -17,6 +18,14 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,12 +50,12 @@ public class MainActivity extends AppCompatActivity {
         getVidyoToken();
 
         //--------------------------------------------| Runtime Permissions
-        /*if(mPermissions.arePermissionsEnabled()){
+        if(mPermissions.arePermissionsEnabled()){
             isGranted = true;
             Log.d(TAG, "Permission granted 1");
         } else {
             mPermissions.requestMultiplePermissions();
-        }*/
+        }
 
     }
 
@@ -60,9 +69,9 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(response);
                     mVidyoToken = jsonObject.getString("token");
                     Log.d(TAG, mVidyoToken);
-                    /*if (isGranted) {
+                    if (isGranted) {
                         goVideoActivity();
-                    }*/
+                    }
                     goVideoActivity();
                 } catch (JSONException e) {
                     e.printStackTrace();
